@@ -32,7 +32,8 @@ async function fetchJSON<T>(input: RequestInfo | URL, init?: RequestInit): Promi
     let message = `Request failed with status ${res.status}`;
 
     if (data && typeof data === 'object') {
-      const anyData = data as ApiError;
+      const unknownData: unknown = data;
+      const anyData = unknownData as Partial<ApiError>;
       if (typeof anyData.message === 'string') {
         message = anyData.message;
       } else if (typeof anyData.error === 'string') {
