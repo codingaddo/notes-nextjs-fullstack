@@ -9,6 +9,9 @@ interface Note {
   createdAt: string;
 }
 
+// Loose shape for API error payloads coming from the backend.
+// We always treat parsed JSON as unknown first and only read these
+// properties after runtime checks in fetchJSON.
 interface ApiError {
   message?: string;
   error?: string;
