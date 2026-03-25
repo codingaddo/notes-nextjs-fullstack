@@ -10,7 +10,8 @@ interface Note {
 }
 
 interface ApiError {
-  message: string;
+  message?: string;
+  error?: string;
 }
 
 async function fetchJSON<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
@@ -25,10 +26,17 @@ async function fetchJSON<T>(input: RequestInfo | URL, init?: RequestInit): Promi
   }
 
   if (!res.ok) {
-    const message =
-      (data && typeof data === 'object' && 'error' in data && (data as ApiError).message) ||
-      (data && typeof data === 'object' && 'message' in data && (data as ApiError).message) ||
-      `Request failed with status ${res.status}`;
+    let message = `Request failed with status ${res.status}`;
+
+    if (data && typeof data === 'object') {
+      const anyData = data as ApiError;
+      if (typeof anyData.message === 'string') {
+        message = anyData.message;
+      } else if (typeof anyData.error === 'string') {
+        message = anyData.error;
+      }
+    }
+
     throw new Error(message);
   }
 
@@ -74,7 +82,7 @@ export default function HomePage() {
     setLoadingList(true);
     setListError(null);
     try {
-      const data = await fetchJSON<Note[]>('/api/notes', { cache: 'no-store' });
+      const data = await fetchJSON<Note[]>("/api/notes", { cache: "no-store" });
       const sorted = data.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
       setNotes(sorted);
       if (!selectedId && sorted.length > 0) {
@@ -220,7 +228,6 @@ export default function HomePage() {
                           key={note.id}
                           className={`note-item${isSelected ? ' selected' : ''}`}
                           onClick={() => setSelectedId(note.id)}
-                          aria-selected={isSelected}
                         >
                           <div className="note-main">
                             <div className="note-title">{note.title || 'Untitled note'}</div>
